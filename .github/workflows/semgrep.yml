@@ -17,26 +17,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - name: Install Semgrep
         run: |
           python3 -m pip install --upgrade pip
           pip install semgrep
 
-      - name: Run Semgrep (NON-BLOCKING)
+      # 1️⃣ Run Semgrep safely
+      - name: Run Semgrep
         run: |
-          semgrep scan \
+          echo "Running Semgrep on path: ${{ inputs.scan_path }}"
+          semgrep \
+            --config p/php \
+            --config p/owasp-top-ten \
+            --config p/r2c-security-audit \
             ${{ inputs.scan_path }} \
             --sarif \
+            --output semgrep.sarif \
             --metrics=off \
-            --no-git-ignore \
-            --output semgrep.sarif || true
+            --no-git-ignore || true
 
+      # 2️⃣ Prove whether SARIF exists
+      - name: Check SARIF file
+        run: |
+          ls -lah
+          if [ -f semgrep.sarif ]; then
+            echo "✅ SARIF file created"
+            jq empty semgrep.sarif
+          else
+            echo "❌ SARIF file NOT created"
+          fi
+
+      # 3️⃣ Upload only if file exists
       - name: Upload SARIF
+        if: always() && hashFiles('semgrep.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
