@@ -30,7 +30,7 @@ jobs:
       - name: Run Semgrep
         run: |
           semgrep \
-              --sarif --output report.sarif \
+              --sarif --output semgrep.sarif \
               --metrics=off \
               --config="p/default" || true
 
