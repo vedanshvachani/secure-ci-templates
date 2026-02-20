@@ -32,7 +32,6 @@ jobs:
           semgrep \
             --config auto \
             --severity ERROR \
-            --baseline-ref origin/main \
             --sarif \
             --output semgrep.sarif || true
 
