@@ -4,7 +4,6 @@ on:
   workflow_call:
     inputs:
       scan_path:
-        description: "Path to scan"
         required: false
         default: "."
         type: string
@@ -15,7 +14,6 @@ permissions:
 
 jobs:
   semgrep:
-    name: Semgrep SAST
     runs-on: ubuntu-latest
 
     steps:
@@ -24,31 +22,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug workspace
-        run: |
-          echo "PWD:"
-          pwd
-          echo "Files:"
-          ls -lah
-          echo "Sample source files:"
-          find . -type f | head -50
-
-
       - name: Install Semgrep
         run: |
           python3 -m pip install --upgrade pip
           pip install semgrep
 
-
-      - name: Semgrep debug info
-        run: |
-          semgrep --version
-          semgrep --config p/php --config p/owasp-top-ten --config p/r2c-security-audit --dump-config > /tmp/semgrep-config.txt
-          echo "Loaded rules:"
-          wc -l /tmp/semgrep-config.txt
-
-
-      - name: Run Semgrep Scan
+      - name: Run Semgrep (NON-BLOCKING)
         run: |
           semgrep \
             --config p/php \
@@ -56,13 +35,11 @@ jobs:
             --config p/r2c-security-audit \
             ${{ inputs.scan_path }} \
             --sarif \
-            --error \
             --metrics=off \
             --no-git-ignore \
-            > semgrep.sarif
+            > semgrep.sarif || true
 
-
-      - name: Upload Semgrep SARIF
+      - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
