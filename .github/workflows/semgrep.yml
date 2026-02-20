@@ -21,10 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Semgrep
+      - name: Install Semgrep (latest)
         run: |
           python3 -m pip install --upgrade pip
-          pip install semgrep
+          pip install --upgrade semgrep
+          semgrep --version
 
       - name: Run Semgrep
         run: |
