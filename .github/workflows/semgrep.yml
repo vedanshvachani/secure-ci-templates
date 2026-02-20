@@ -1,4 +1,4 @@
-name: Semgrep Reusable Scan
+name: Semgrep Reusable Scan (Default)
 
 on:
   workflow_call:
@@ -24,29 +24,15 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install semgrep
 
-      # 1️⃣ Run Semgrep safely
-      - name: Run Semgrep
+      - name: Run Semgrep (default auto config)
         run: |
-          echo "Running Semgrep on path: ${{ inputs.scan_path }}"
-          semgrep scan \
+          echo "Running Semgrep default scan on: ${{ inputs.scan_path }}"
+          semgrep \
+            --config auto \
             ${{ inputs.scan_path }} \
             --sarif \
-            --output semgrep.sarif \
-            --metrics=off \
-            --no-git-ignore || true
+            --output semgrep.sarif
 
-      # 2️⃣ Prove whether SARIF exists
-      - name: Check SARIF file
-        run: |
-          ls -lah
-          if [ -f semgrep.sarif ]; then
-            echo "✅ SARIF file created"
-            jq empty semgrep.sarif
-          else
-            echo "❌ SARIF file NOT created"
-          fi
-
-      # 3️⃣ Upload only if file exists
       - name: Upload SARIF
         if: always() && hashFiles('semgrep.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
