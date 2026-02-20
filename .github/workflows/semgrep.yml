@@ -1,5 +1,13 @@
+name: Semgrep Reusable Scan
+
 on:
   workflow_call:
+    inputs:
+      scan_path:
+        description: "Path to scan"
+        required: false
+        default: "."
+        type: string
 
 permissions:
   contents: read
@@ -7,27 +15,56 @@ permissions:
 
 jobs:
   semgrep:
+    name: Semgrep SAST
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout calling repository code
+      # 1️⃣ Checkout the CALLER repo (CRITICAL)
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # 2️⃣ Debug workspace (one-time keep until stable)
+      - name: Debug workspace
+        run: |
+          echo "PWD:"
+          pwd
+          echo "Files:"
+          ls -lah
+          echo "Sample source files:"
+          find . -type f | head -50
+
+      # 3️⃣ Install Semgrep
       - name: Install Semgrep
         run: |
           python3 -m pip install --upgrade pip
           pip install semgrep
 
-      - name: Run Semgrep scan
-        env:
-          SEMGREP_SEND_METRICS: off
+      # 4️⃣ Semgrep version + config validation
+      - name: Semgrep debug info
         run: |
-          semgrep scan \
-            --config=p/security-audit \
-            --sarif \
-            --output=semgrep.sarif
+          semgrep --version
+          semgrep --config p/php --config p/owasp-top-ten --config p/r2c-security-audit --dump-config > /tmp/semgrep-config.txt
+          echo "Loaded rules:"
+          wc -l /tmp/semgrep-config.txt
 
-      - name: Upload results to GitHub Security
+      # 5️⃣ Run Semgrep and generate SARIF
+      - name: Run Semgrep Scan
+        run: |
+          semgrep \
+            --config p/php \
+            --config p/owasp-top-ten \
+            --config p/r2c-security-audit \
+            ${{ inputs.scan_path }} \
+            --sarif \
+            --error \
+            --metrics=off \
+            --no-git-ignore \
+            > semgrep.sarif
+
+      # 6️⃣ Upload SARIF to GitHub Security tab
+      - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
