@@ -29,10 +29,7 @@ jobs:
 
       - name: Run Semgrep (NON-BLOCKING)
         run: |
-          semgrep \
-            --config p/php \
-            --config p/owasp-top-ten \
-            --config p/r2c-security-audit \
+          semgrep scan \
             ${{ inputs.scan_path }} \
             --sarif \
             --metrics=off \
