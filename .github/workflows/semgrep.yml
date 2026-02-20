@@ -19,13 +19,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the CALLER repo (CRITICAL)
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2️⃣ Debug workspace (one-time keep until stable)
       - name: Debug workspace
         run: |
           echo "PWD:"
@@ -35,13 +33,13 @@ jobs:
           echo "Sample source files:"
           find . -type f | head -50
 
-      # 3️⃣ Install Semgrep
+
       - name: Install Semgrep
         run: |
           python3 -m pip install --upgrade pip
           pip install semgrep
 
-      # 4️⃣ Semgrep version + config validation
+
       - name: Semgrep debug info
         run: |
           semgrep --version
@@ -49,7 +47,7 @@ jobs:
           echo "Loaded rules:"
           wc -l /tmp/semgrep-config.txt
 
-      # 5️⃣ Run Semgrep and generate SARIF
+
       - name: Run Semgrep Scan
         run: |
           semgrep \
@@ -63,7 +61,7 @@ jobs:
             --no-git-ignore \
             > semgrep.sarif
 
-      # 6️⃣ Upload SARIF to GitHub Security tab
+
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
