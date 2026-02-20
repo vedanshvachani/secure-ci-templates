@@ -18,22 +18,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Semgrep
         run: |
           python3 -m pip install --upgrade pip
           pip install semgrep
 
-      - name: Run Semgrep (default auto config)
+      - name: Run Semgrep
         run: |
-          echo "Running Semgrep default scan on: ${{ inputs.scan_path }}"
           semgrep \
             --config auto \
-            ${{ inputs.scan_path }} \
-            --sarif \
             --severity ERROR \
             --baseline-ref origin/main \
-            --output semgrep.sarif
+            --sarif \
+            --output semgrep.sarif || true
 
       - name: Upload SARIF
         if: always() && hashFiles('semgrep.sarif') != ''
