@@ -28,10 +28,7 @@ jobs:
       - name: Run Semgrep
         run: |
           echo "Running Semgrep on path: ${{ inputs.scan_path }}"
-          semgrep \
-            --config p/php \
-            --config p/owasp-top-ten \
-            --config p/r2c-security-audit \
+          semgrep scan \
             ${{ inputs.scan_path }} \
             --sarif \
             --output semgrep.sarif \
