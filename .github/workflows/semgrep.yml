@@ -30,10 +30,9 @@ jobs:
       - name: Run Semgrep
         run: |
           semgrep \
-            --config auto \
-            --severity ERROR \
-            --sarif \
-            --output semgrep.sarif || true
+              --sarif --output report.sarif \
+              --metrics=off \
+              --config="p/default" || true
 
       - name: Upload SARIF
         if: always() && hashFiles('semgrep.sarif') != ''
