@@ -34,7 +34,7 @@ jobs:
             --sarif \
             --metrics=off \
             --no-git-ignore \
-            > semgrep.sarif || true
+            --output semgrep.sarif || true
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
